@@ -39,11 +39,27 @@ class Board:
     # - each piece of the board can be B, W, or unoccupied
     # - each piece of the board has an associated coordinate.
 
+    # initial board configuration:
+    # * * * * * * * *
+    # * * * * * * * *
+    # * * * * * * * *
+    # * * * B W * * *
+    # * * * W B * * *
+    # * * * * * * * *
+    # * * * * * * * *
+    # * * * * * * * *
+    
     # function ideas:
     # this will initialize the board at the beginning of the game
     def __init__(self):
         pass
 
+    # the system must always save the prior board state
+    def save_current_board_state(self):
+        pass
+    
+    def get_past_board_state(self):
+        pass
     # function to update the state of a particular coordinate on the board
     def update_coordinate_state(self):
         pass
