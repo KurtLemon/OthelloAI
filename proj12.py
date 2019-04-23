@@ -56,8 +56,19 @@ class Board:
     # this will initialize the board at the beginning of the game
     def __init__(self, dimension):
         # each board piece could be a tuple with: X-coord, y-coord, and state(B,W,*)
+        # (3,3) --> B
+        # (3,4) --> W
+        # (4,3) --> W
+        # (4,4) --> B
+        # the first value is the row, second is the column, third is the piece
+        board_tokens = [(3,3,'B'),
+                        (3,4,'W'),
+                        (4,3,'W'),
+                        (4,4,'B')]
         self.board = [[] for i in range(dimension)]
 
+    def change_initial_configuration(self):
+        pass
     # the system must always save the prior board state
     def save_current_board_state(self):
         pass
