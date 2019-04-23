@@ -24,6 +24,13 @@ class Othello:
     # - assigns colors to teams
     # - reads in answers from player
     # -asks player for confirmation to change board configuration
+
+    # Timer called when  a new move is inititated. Forfeit game if time goes above ten seconds.
+    def start_timer(self):
+        pass
+    
+    def forfeit_game(self):
+        pass
     pass
 
 class Board:
@@ -37,16 +44,18 @@ class Board:
     def __init__(self):
         pass
 
+    # function to update the state of a particular coordinate on the board
+    def update_coordinate_state(self):
+        pass
+
+    # update the state of the entire board to reflect new move from user
+    def update_board_state(self):
+        pass
+
     # this will display the board pieces in their current state
     def display_board(self):
         pass
     
-    pass
-
-class BoardPiece:
-    # Board Piece
-    # - state: B, W, or unoccupied
-    # - location: coordinate in the row (row, col)
     pass
 
 class Player:
@@ -63,12 +72,20 @@ class Player:
     def assign_color(self):
         pass
 
+    # called if the player decides to quit the game
+    def player_quit(self):
+        pass
+
     pass
 
 class AIPlayer:
     # AI Player
     # - determines the available moves
     # - determines which move to make
+
+    # the AI will determine if making a move is possible
+    def can_make_move(self):
+        pass
     pass
 
 class Scoreboard:
@@ -79,17 +96,17 @@ class Scoreboard:
     # initialize the scoreboard to a beginning game state
     def __init__(self):
         pass
+
+    def count_black_pieces(self):
+        pass
+    def count_white_pieces(self):
+        pass
     def update_scores(self):
         pass
     
     def display_scores(self):
         pass
     pass
-
-# Specifications for Interaction
-# P = Player
-# AI = Player
-# S = System that keeps track of things
 
 # The board is an 8 x 8 matrix with initial config:
 # WB
