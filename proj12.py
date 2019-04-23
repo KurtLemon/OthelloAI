@@ -25,6 +25,9 @@ class Othello:
     # - reads in answers from player
     # -asks player for confirmation to change board configuration
 
+    # starts the othello game
+    def othello(self):
+        pass
     # Timer called when  a new move is inititated. Forfeit game if time goes above ten seconds.
     def start_timer(self):
         pass
@@ -48,11 +51,12 @@ class Board:
     # * * * * * * * *
     # * * * * * * * *
     # * * * * * * * *
-    
+
     # function ideas:
     # this will initialize the board at the beginning of the game
-    def __init__(self):
-        pass
+    def __init__(self, dimension):
+        # each board piece could be a tuple with: X-coord, y-coord, and state(B,W,*)
+        self.board = [[] for i in range(dimension)]
 
     # the system must always save the prior board state
     def save_current_board_state(self):
@@ -70,9 +74,8 @@ class Board:
 
     # this will display the board pieces in their current state
     def display_board(self):
-        pass
-    
-    pass
+        for row in range(len(self.board)):
+            print(self.board[row])
 
 class Player:
     # Player
@@ -119,11 +122,19 @@ class Scoreboard:
         pass
     def update_scores(self):
         pass
-    
+    def display_player_turn(self):
+        pass
     def display_scores(self):
         pass
     pass
 
+def main():
+    # initialize board (just to test the function, this will be replaced with othello class)
+    gameboard = Board(8)
+    gameboard.display_board()
+
+
+main()
 # The board is an 8 x 8 matrix with initial config:
 # WB
 # BW
