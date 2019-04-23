@@ -21,10 +21,9 @@ class Othello:
     # - displays a timer that ticks off seconds starting
     # from 10 when a move is initiated
     # - tracks if the AI fails to move within ten seconds
-    # - displays board
     # - assigns colors to teams
     # - reads in answers from player
-    # -asks player for confirmationto change board configuration
+    # -asks player for confirmation to change board configuration
     pass
 
 class Board:
@@ -32,6 +31,16 @@ class Board:
     # - the board has a game state
     # - each piece of the board can be B, W, or unoccupied
     # - each piece of the board has an associated coordinate.
+
+    # function ideas:
+    # this will initialize the board at the beginning of the game
+    def __init__(self):
+        pass
+
+    # this will display the board pieces in their current state
+    def display_board(self):
+        pass
+    
     pass
 
 class BoardPiece:
@@ -44,6 +53,16 @@ class Player:
     # Player
     # - has color (black or white)
     # - will take a turn
+
+    # function ideas
+    # initialize player to beginning state
+    def __init__(self):
+        pass
+
+    # assign the player a specific color (black or white) based on user input
+    def assign_color(self):
+        pass
+
     pass
 
 class AIPlayer:
@@ -56,6 +75,15 @@ class Scoreboard:
     # Scoreboard
     # - The scoreboard displays the number of black and number
     # of white pieces on the board.
+
+    # initialize the scoreboard to a beginning game state
+    def __init__(self):
+        pass
+    def update_scores(self):
+        pass
+    
+    def display_scores(self):
+        pass
     pass
 
 # Specifications for Interaction
