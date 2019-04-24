@@ -17,6 +17,21 @@ class Othello:
                 print(piece, end=' ')
             print()
 
+    def game(self):
+        print("Welcome to Othello, Black goes first")
+        # Create function to see if there are any moves left
+        moves_left = self.spaces_available()
+        while moves_left:
+            self.turn('B')
+            self.turn('W')
+            moves_left = self.spaces_available()
+
+    def spaces_available(self):
+        for row in self.board:
+            if '*' in row:
+                return True
+        return False
+
     def turn(self, piece):
         # Display Board state for the player
         self.print_board()
@@ -54,6 +69,8 @@ class Othello:
 
     def validate_move(self, x, y):
         # Check location is open
+        if x < 0 or x > 7 or y < 0 or y > 7:
+            return False, "Invalid move"
         if not self.board[y][x] == '*':
             return False, "Location is taken"
 
@@ -83,8 +100,7 @@ class Othello:
 def main():
     othello = Othello()
     othello.generate_start()
-    othello.turn('B')
-    othello.turn('W')
+    othello.game()
     othello.print_board()
 
 
