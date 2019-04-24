@@ -22,14 +22,31 @@ class Othello:
         # Create function to see if there are any moves left
         moves_left = self.spaces_available()
         while moves_left:
-            self.turn('B', 'W')
-            self.turn('W', 'B')
-            moves_left = self.spaces_available()
+            if self.valid_moves_exist('B', 'W'):
+                self.turn('B', 'W')
+            else:
+                print("No valid moves for Black available")
+            if self.valid_moves_exist('W', 'B'):
+                self.turn('W', 'B')
+            else:
+                print("No valid moves for White available")
+            moves_left = self.spaces_available() and \
+                (self.valid_moves_exist('B', 'W') or self.valid_moves_exist('W', 'B'))
 
     def spaces_available(self):
         for row in self.board:
             if '*' in row:
                 return True
+        return False
+
+    def valid_moves_exist(self, piece, opponent):
+        directions = ['up', 'down', 'left', 'right', 'up-left', 'up-right', 'down-left', 'down-right']
+        for y in range(len(self.board)):
+            for x in range(len(self.board[y])):
+                if self.board[y][x] == '*':
+                    for direction in directions:
+                        if self.check_for_pieces(piece, opponent, x, y, direction):
+                            return True
         return False
 
     def turn(self, piece, opponent):
@@ -174,7 +191,6 @@ class Othello:
             if self.check_for_pieces(piece, opponent, x, y, direction):
                 return True, "Move is good"
 
-        # TODO: Check if conditions are met for the move
         return False, "No pieces captured by this move"
 
     def char_to_int_index(self, c):
