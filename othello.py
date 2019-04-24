@@ -22,8 +22,8 @@ class Othello:
         # Create function to see if there are any moves left
         moves_left = self.spaces_available()
         while moves_left:
-            self.turn('B')
-            self.turn('W')
+            self.turn('B', 'W')
+            self.turn('W', 'B')
             moves_left = self.spaces_available()
 
     def spaces_available(self):
@@ -32,7 +32,7 @@ class Othello:
                 return True
         return False
 
-    def turn(self, piece):
+    def turn(self, piece, opponent):
         # Display Board state for the player
         self.print_board()
 
@@ -45,7 +45,7 @@ class Othello:
         y = int(y) - 1
 
         # Validate move
-        valid_move, message = self.validate_move(x, y)
+        valid_move, message = self.validate_move(x, y, piece, opponent)
         while not valid_move:
             print(message, "enter another move.")
 
@@ -56,7 +56,7 @@ class Othello:
             # Convert user input to proper indexing values
             x = self.char_to_int_index(x)
             y = int(y) - 1
-            valid_move, message = self.validate_move(x, y)
+            valid_move, message = self.validate_move(x, y, piece, opponent)
 
         self.place_piece(x, y, piece)
 
@@ -64,18 +64,118 @@ class Othello:
         # Fill pieces as necessary
         pass
 
+    def fill_pieces(self, piece, x, y):
+        # Up
+        # Down
+        # Right
+        # Left
+        # Up-left
+        # Up-right
+        # Down-left
+        # Down-right
+        pass
+
+    def check_for_pieces(self, piece, opponent, x, y, mode):
+        if mode == 'up':
+            if self.board[y - 1][x] != opponent:
+                return False
+            for dy in range(y - 2, -1, -1):
+                if self.board[dy][x] == '*':
+                    return False
+                if self.board[dy][x] == piece:
+                    return True
+            return False
+        if mode == 'down':
+            if self.board[y + 1][x] != opponent:
+                return False
+            for dy in range(y + 2, 8):
+                if self.board[dy][x] == '*':
+                    return False
+                if self.board[dy][x] == piece:
+                    return True
+            return False
+        if mode == 'left':
+            if self.board[y][x - 1] != opponent:
+                return False
+            for dx in range(x - 2, -1, -1):
+                if self.board[y][dx] == '*':
+                    return False
+                if self.board[y][dx] == piece:
+                    return True
+            return False
+        if mode == 'right':
+            if self.board[y][x + 1] != opponent:
+                return False
+            for dx in range(x + 2, 8):
+                if self.board[y][dx] == '*':
+                    return False
+                if self.board[y][dx] == piece:
+                    return True
+            return False
+        if mode == 'up-left':
+            if self.board[y - 1][x - 1] != opponent:
+                return False
+            d = 2
+            while x - d >= 0 and y - d >= 0:
+                if self.board[y - d][x - d] == '*':
+                    return False
+                if self.board[y - d][x - d] == piece:
+                    return True
+                d += 1
+            return False
+        if mode == 'up-right':
+            if self.board[y - 1][x + 1] != opponent:
+                return False
+            d = 2
+            while x + d < 8 and y - d >= 0:
+                if self.board[y - d][x + d] == '*':
+                    return False
+                if self.board[y - d][x + d] == piece:
+                    return True
+                d += 1
+            return False
+        if mode == 'down-left':
+            if self.board[y + 1][x - 1] != opponent:
+                return False
+            d = 2
+            while x - d >= 0 and y + d < 8:
+                if self.board[y + d][x - d] == '*':
+                    return False
+                if self.board[y + d][x - d] == piece:
+                    return True
+                d += 1
+            return False
+        if mode == 'down-right':
+            if self.board[y + 1][x + 1] != opponent:
+                return False
+            d = 2
+            while x + d < 8 and y + d < 8:
+                if self.board[y + d][x + d] == '*':
+                    return False
+                if self.board[y + d][x + d] == piece:
+                    return True
+                d += 1
+            return False
+        return False
+
     def place_piece(self, x, y, piece):
         self.board[y][x] = piece
 
-    def validate_move(self, x, y):
+    def validate_move(self, x, y, piece, opponent):
         # Check location is open
         if x < 0 or x > 7 or y < 0 or y > 7:
             return False, "Invalid move"
         if not self.board[y][x] == '*':
             return False, "Location is taken"
 
+        directions = ['up', 'down', 'left', 'right', 'up-left', 'up-right', 'down-left', 'down-right']
+
+        for direction in directions:
+            if self.check_for_pieces(piece, opponent, x, y, direction):
+                return True, "Move is good"
+
         # TODO: Check if conditions are met for the move
-        return True, "Move is good"
+        return False, "No pieces captured by this move"
 
     def char_to_int_index(self, c):
         if c == 'A' or c == 'a':
