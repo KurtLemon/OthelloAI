@@ -86,6 +86,7 @@ class Othello:
                     timer = threading.Timer(10, self.time_out)
                     if ai_player_token == 'w':
                         timer.start()
+                        # AI TAKES TURN
                         self.turn('W', 'B')
                         timer.cancel()
                     else:
