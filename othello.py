@@ -1,12 +1,17 @@
+import copy
+
+
 class Othello:
     def __init__(self):
         self.board = [['*' for _ in range(8)] for _ in range(8)]
+        self.backup_board = copy.deepcopy(self.board)
 
     def generate_start(self):
         self.board[3][3] = 'B'
         self.board[3][4] = 'W'
         self.board[4][3] = 'W'
         self.board[4][4] = 'B'
+        self.backup_board = copy.deepcopy(self.board)
 
     def print_board(self):
         print("   _A__B__C__D__E__F__G__H_")
@@ -17,21 +22,67 @@ class Othello:
                 print(piece, end=' ')
             print()
 
+    def print_backup_board(self):
+        print("   _A__B__C__D__E__F__G__H_")
+        for i in range(len(self.backup_board)):
+            print(i + 1, '|', end='')
+            for piece in self.backup_board[i]:
+                print(' ', end='')
+                print(piece, end=' ')
+            print()
+
+    def print_both_boards(self):
+        print("  New Board Configuration", "        Old Board Configuration")
+        print("   _A__B__C__D__E__F__G__H_", "      _A__B__C__D__E__F__G__H_")
+        for i in range(len(self.board)):
+            print(i + 1, '|', end='')
+            for piece in self.board[i]:
+                print(' ', end='')
+                print(piece, end=' ')
+            print('   ', i + 1, '|', end='')
+            for piece in self.backup_board[i]:
+                print(' ', end='')
+                print(piece, end=' ')
+            print()
+
     def game(self):
         print("Welcome to Othello, Black goes first")
         # Create function to see if there are any moves left
         moves_left = self.spaces_available()
         while moves_left:
             if self.valid_moves_exist('B', 'W'):
-                self.turn('B', 'W')
+                print()
+                should_have_turn = True
+                while should_have_turn:
+                    print("Black's Turn")
+                    self.turn('B', 'W')
+                    should_have_turn = not self.confirm_move()
             else:
                 print("No valid moves for Black available")
             if self.valid_moves_exist('W', 'B'):
-                self.turn('W', 'B')
+                print()
+                should_have_turn = True
+                while should_have_turn:
+                    print("White's Turn")
+                    self.turn('W', 'B')
+                    should_have_turn = not self.confirm_move()
             else:
                 print("No valid moves for White available")
             moves_left = self.spaces_available() and \
                 (self.valid_moves_exist('B', 'W') or self.valid_moves_exist('W', 'B'))
+
+    def confirm_move(self):
+        print("Confirm Move:")
+        self.print_both_boards()
+        acc_input = input("Accept New Board? (y, n)")
+        while acc_input != 'y' and acc_input != 'Y' and acc_input != 'n' and acc_input != 'N':
+            acc_input = input("Accept New Board? (y, n)")
+        if acc_input == 'y' or acc_input == 'Y':
+            self.backup_board = copy.deepcopy(self.board)
+            return True
+        if acc_input == 'n' or acc_input == 'N':
+            self.board = copy.deepcopy(self.backup_board)
+        return False
 
     def spaces_available(self):
         for row in self.board:
@@ -78,18 +129,7 @@ class Othello:
         self.place_piece(x, y, piece)
 
         # TODO: Create function to fill in pieces where appropriate
-        # Fill pieces as necessary
-        pass
-
-    def fill_pieces(self, piece, x, y):
-        # Up
-        # Down
-        # Right
-        # Left
-        # Up-left
-        # Up-right
-        # Down-left
-        # Down-right
+        self.flip_pieces(x, y, piece, opponent)
         pass
 
     def check_for_pieces(self, piece, opponent, x, y, mode):
@@ -200,6 +240,49 @@ class Othello:
             while self.board[dy][x] == opponent:
                 self.board[dy][x] = piece
                 dy -= 1
+        if self.check_for_pieces(piece, opponent, x, y, 'down'):
+            dy = y + 1
+            while self.board[dy][x] == opponent:
+                self.board[dy][x] = piece
+                dy += 1
+        if self.check_for_pieces(piece, opponent, x, y, 'left'):
+            dx = x - 1
+            while self.board[y][dx] == opponent:
+                self.board[y][dx] = piece
+                dx -= 1
+        if self.check_for_pieces(piece, opponent, x, y, 'right'):
+            dx = x + 1
+            while self.board[y][dx] == opponent:
+                self.board[y][dx] = piece
+                dx += 1
+        if self.check_for_pieces(piece, opponent, x, y, 'up-left'):
+            dy = y - 1
+            dx = x - 1
+            while self.board[dy][dx] == opponent:
+                self.board[dy][dx] = piece
+                dy -= 1
+                dx -= 1
+        if self.check_for_pieces(piece, opponent, x, y, 'up-right'):
+            dy = y - 1
+            dx = x + 1
+            while self.board[dy][dx] == opponent:
+                self.board[dy][dx] = piece
+                dy -= 1
+                dx += 1
+        if self.check_for_pieces(piece, opponent, x, y, 'down-left'):
+            dy = y + 1
+            dx = x - 1
+            while self.board[dy][dx] == opponent:
+                self.board[dy][dx] = piece
+                dy += 1
+                dx -= 1
+        if self.check_for_pieces(piece, opponent, x, y, 'down-right'):
+            dy = y + 1
+            dx = x + 1
+            while self.board[dy][dx] == opponent:
+                self.board[dy][dx] = piece
+                dy += 1
+                dx += 1
 
     def validate_move(self, x, y, piece, opponent):
         # Check location is open
