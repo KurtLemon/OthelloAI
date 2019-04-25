@@ -55,6 +55,7 @@ class Othello:
                 should_have_turn = True
                 while should_have_turn:
                     print("Black's Turn")
+                    self.print_scores()
                     self.turn('B', 'W')
                     should_have_turn = not self.confirm_move()
             else:
@@ -64,6 +65,7 @@ class Othello:
                 should_have_turn = True
                 while should_have_turn:
                     print("White's Turn")
+                    self.print_scores()
                     self.turn('W', 'B')
                     should_have_turn = not self.confirm_move()
             else:
@@ -89,6 +91,18 @@ class Othello:
             if '*' in row:
                 return True
         return False
+
+    def print_scores(self):
+        print("Black Score: ", self.get_score('B'))
+        print("White Score: ", self.get_score('W'))
+
+    def get_score(self, piece):
+        total = 0
+        for row in self.board:
+            for space in row:
+                if space == piece:
+                    total += 1
+        return total
 
     def valid_moves_exist(self, piece, opponent):
         directions = ['up', 'down', 'left', 'right', 'up-left', 'up-right', 'down-left', 'down-right']
