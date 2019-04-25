@@ -1,4 +1,5 @@
 import copy
+import threading
 
 
 class Othello:
@@ -7,6 +8,13 @@ class Othello:
         self.backup_board = copy.deepcopy(self.board)
 
     def generate_start(self):
+        self.board[3][3] = 'W'
+        self.board[3][4] = 'B'
+        self.board[4][3] = 'B'
+        self.board[4][4] = 'W'
+        self.backup_board = copy.deepcopy(self.board)
+
+    def generate_start_2(self):
         self.board[3][3] = 'B'
         self.board[3][4] = 'W'
         self.board[4][3] = 'W'
@@ -46,6 +54,8 @@ class Othello:
             print()
 
     def game(self):
+        ai_player_token = self.get_ai_player()
+        print(ai_player_token)
         print("Welcome to Othello, Black goes first")
         # Create function to see if there are any moves left
         moves_left = self.spaces_available()
@@ -55,8 +65,13 @@ class Othello:
                 should_have_turn = True
                 while should_have_turn:
                     print("Black's Turn")
+                    timer = threading.Timer(10, self.time_out)
+                    if ai_player_token == 'b':
+                        timer.start()
                     self.print_scores()
                     self.turn('B', 'W')
+                    if ai_player_token == 'b':
+                        timer.cancel()
                     should_have_turn = not self.confirm_move()
             else:
                 print("No valid moves for Black available")
@@ -65,20 +80,36 @@ class Othello:
                 should_have_turn = True
                 while should_have_turn:
                     print("White's Turn")
+                    timer = threading.Timer(10, self.time_out)
+                    if ai_player_token == 'w':
+                        timer.start()
                     self.print_scores()
                     self.turn('W', 'B')
+                    if ai_player_token == 'w':
+                        timer.cancel()
                     should_have_turn = not self.confirm_move()
             else:
                 print("No valid moves for White available")
             moves_left = self.spaces_available() and \
                 (self.valid_moves_exist('B', 'W') or self.valid_moves_exist('W', 'B'))
 
+    def time_out(self):
+        print("10s has elapsed for AI player. AI loses.")
+        self.print_scores()
+        quit()
+
+    def get_ai_player(self):
+        player_input = input("Which Color should the AI have? (b, w)")
+        while player_input != 'b' and player_input != 'B' and player_input != 'w' and player_input != 'W':
+            player_input = input("Invalid input. Which Color should the AI have? (b, w)")
+        return player_input.lower()
+
     def confirm_move(self):
         print("Confirm Move:")
         self.print_both_boards()
         acc_input = input("Accept New Board? (y, n)")
         while acc_input != 'y' and acc_input != 'Y' and acc_input != 'n' and acc_input != 'N':
-            acc_input = input("Accept New Board? (y, n)")
+            acc_input = input("Invalid input. Accept New Board? (y, n)")
         if acc_input == 'y' or acc_input == 'Y':
             self.backup_board = copy.deepcopy(self.board)
             return True
@@ -120,7 +151,7 @@ class Othello:
 
         # Take in user input
         x = input("X [A, H]: ")
-        y = input("Y (1, 8): ")
+        y = input("Y [1, 8]: ")
 
         # Convert user input to proper indexing values
         x = self.char_to_int_index(x)
@@ -141,10 +172,7 @@ class Othello:
             valid_move, message = self.validate_move(x, y, piece, opponent)
 
         self.place_piece(x, y, piece)
-
-        # TODO: Create function to fill in pieces where appropriate
         self.flip_pieces(x, y, piece, opponent)
-        pass
 
     def check_for_pieces(self, piece, opponent, x, y, mode):
         if mode == 'up':
@@ -335,9 +363,20 @@ class Othello:
 
 def main():
     othello = Othello()
-    othello.generate_start()
+    start_position = get_start_position()
+    if start_position == '1':
+        othello.generate_start()
+    else:
+        othello.generate_start_2()
     othello.game()
     othello.print_board()
+
+
+def get_start_position():
+    player_input = input("Which configuration do you want to start with?\n1:  2:\nWB  BW\nBW  WB")
+    while player_input != '1' and player_input != '2':
+        player_input = input("Invalid input. Which configuration do you want to start with?\n1:  2:\nWB  BW\nBW  WB")
+    return player_input
 
 
 if __name__ == '__main__':
