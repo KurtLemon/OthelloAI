@@ -65,13 +65,15 @@ class Othello:
                 should_have_turn = True
                 while should_have_turn:
                     print("Black's Turn")
+                    self.print_scores()
                     timer = threading.Timer(10, self.time_out)
                     if ai_player_token == 'b':
                         timer.start()
-                    self.print_scores()
-                    self.turn('B', 'W')
-                    if ai_player_token == 'b':
+                        # AI TAKES TURN
+                        self.turn('B', 'W')
                         timer.cancel()
+                    else:
+                        self.turn('B', 'W')
                     should_have_turn = not self.confirm_move()
             else:
                 print("No valid moves for Black available")
@@ -80,13 +82,14 @@ class Othello:
                 should_have_turn = True
                 while should_have_turn:
                     print("White's Turn")
+                    self.print_scores()
                     timer = threading.Timer(10, self.time_out)
                     if ai_player_token == 'w':
                         timer.start()
-                    self.print_scores()
-                    self.turn('W', 'B')
-                    if ai_player_token == 'w':
+                        self.turn('W', 'B')
                         timer.cancel()
+                    else:
+                        self.turn('W', 'B')
                     should_have_turn = not self.confirm_move()
             else:
                 print("No valid moves for White available")
