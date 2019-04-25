@@ -1,0 +1,6 @@
+Othello Interface To Do
+- The scoreboard needs to show the score throughout the game.
+- Player needs to be asked if he/she wants to be black or white.
+- If the player chooses white, the AI will announce that it is about to make a move and ask for approval.
+- The square where the new move occured along with all the squares affected by the move are highlighted.
+- After a new move, the game needs ask for confirmation. once the player has confirmed, the board configuration will oficially change.
