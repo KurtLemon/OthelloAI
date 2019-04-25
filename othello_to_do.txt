@@ -4,3 +4,9 @@ Othello Interface To Do
 - If the player chooses white, the AI will announce that it is about to make a move and ask for approval.
 - The square where the new move occured along with all the squares affected by the move are highlighted.
 - After a new move, the game needs ask for confirmation. once the player has confirmed, the board configuration will oficially change.
+- The game needs to allow the initial configuration to be changed to:
+    BW
+    WB
+- The system must display a timer that ticks off seconds starting from when a move is initiated.
+- A system whose AI fails to move within 10 seconds forfeits the game.
+- The system must always save the prior board state and return to it in the event of a dispute.
