@@ -94,6 +94,8 @@ class Othello:
 
     def check_for_pieces(self, piece, opponent, x, y, mode):
         if mode == 'up':
+            if y == 0:
+                return False
             if self.board[y - 1][x] != opponent:
                 return False
             for dy in range(y - 2, -1, -1):
@@ -103,6 +105,8 @@ class Othello:
                     return True
             return False
         if mode == 'down':
+            if y == 7:
+                return False
             if self.board[y + 1][x] != opponent:
                 return False
             for dy in range(y + 2, 8):
@@ -112,6 +116,8 @@ class Othello:
                     return True
             return False
         if mode == 'left':
+            if x == 0:
+                return False
             if self.board[y][x - 1] != opponent:
                 return False
             for dx in range(x - 2, -1, -1):
@@ -121,6 +127,8 @@ class Othello:
                     return True
             return False
         if mode == 'right':
+            if x == 7:
+                return False
             if self.board[y][x + 1] != opponent:
                 return False
             for dx in range(x + 2, 8):
@@ -130,6 +138,8 @@ class Othello:
                     return True
             return False
         if mode == 'up-left':
+            if y == 0 or x == 0:
+                return False
             if self.board[y - 1][x - 1] != opponent:
                 return False
             d = 2
@@ -141,6 +151,8 @@ class Othello:
                 d += 1
             return False
         if mode == 'up-right':
+            if y == 0 or x == 7:
+                return False
             if self.board[y - 1][x + 1] != opponent:
                 return False
             d = 2
@@ -152,6 +164,8 @@ class Othello:
                 d += 1
             return False
         if mode == 'down-left':
+            if y == 7 or x == 0:
+                return False
             if self.board[y + 1][x - 1] != opponent:
                 return False
             d = 2
@@ -163,6 +177,8 @@ class Othello:
                 d += 1
             return False
         if mode == 'down-right':
+            if y == 7 or x == 7:
+                return False
             if self.board[y + 1][x + 1] != opponent:
                 return False
             d = 2
@@ -177,6 +193,13 @@ class Othello:
 
     def place_piece(self, x, y, piece):
         self.board[y][x] = piece
+
+    def flip_pieces(self, x, y, piece, opponent):
+        if self.check_for_pieces(piece, opponent, x, y, 'up'):
+            dy = y - 1
+            while self.board[dy][x] == opponent:
+                self.board[dy][x] = piece
+                dy -= 1
 
     def validate_move(self, x, y, piece, opponent):
         # Check location is open
