@@ -1,5 +1,6 @@
 import copy
 import threading
+import random
 
 
 class Othello:
@@ -70,10 +71,11 @@ class Othello:
                     if ai_player_token == 'b':
                         timer.start()
                         # AI TAKES TURN
-                        self.turn('B', 'W')
+                        self.ai_turn('B', 'W')
                         timer.cancel()
                     else:
-                        self.turn('B', 'W')
+                        # CHANGE THIS TO self.turn
+                        self.ai_turn('B', 'W')
                     should_have_turn = not self.confirm_move()
             else:
                 print("No valid moves for Black available")
@@ -87,15 +89,35 @@ class Othello:
                     if ai_player_token == 'w':
                         timer.start()
                         # AI TAKES TURN
-                        self.turn('W', 'B')
+                        self.ai_turn('W', 'B')
                         timer.cancel()
                     else:
-                        self.turn('W', 'B')
+                        # CHANGE THIS TO self.turn
+                        self.ai_turn('W', 'B')
                     should_have_turn = not self.confirm_move()
             else:
                 print("No valid moves for White available")
             moves_left = self.spaces_available() and \
                 (self.valid_moves_exist('B', 'W') or self.valid_moves_exist('W', 'B'))
+        self.end_game_win()
+
+    def end_game_win(self):
+        black_count = 0
+        white_count = 0
+        for row in self.board:
+            for piece in row:
+                if piece == 'B':
+                    black_count += 1
+                elif piece == 'W':
+                    white_count += 1
+        print("****************************")
+        if black_count > white_count:
+            print("Black wins!")
+        elif white_count > black_count:
+            print("White wins!")
+        else:
+            print("Tie.")
+        self.print_scores()
 
     def time_out(self):
         print("10s has elapsed for AI player. AI loses.")
@@ -148,6 +170,18 @@ class Othello:
                         if self.check_for_pieces(piece, opponent, x, y, direction):
                             return True
         return False
+
+    def ai_turn(self, piece, opponent):
+        x = random.randint(0, 8)
+        y = random.randint(0, 8)
+
+        valid_move, message = self.validate_move(x, y, piece, opponent)
+        while not valid_move:
+            x = random.randint(0, 8)
+            y = random.randint(0, 8)
+            valid_move, message = self.validate_move(x, y, piece, opponent)
+        self.place_piece(x, y, piece)
+        self.flip_pieces(x, y, piece, opponent)
 
     def turn(self, piece, opponent):
         # Display Board state for the player
