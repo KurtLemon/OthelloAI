@@ -74,8 +74,7 @@ class Othello:
                         self.ai_turn('B', 'W')
                         timer.cancel()
                     else:
-                        # CHANGE THIS TO self.turn
-                        self.ai_turn('B', 'W')
+                        self.turn('B', 'W')
                     should_have_turn = not self.confirm_move()
             else:
                 print("No valid moves for Black available")
@@ -92,8 +91,7 @@ class Othello:
                         self.ai_turn('W', 'B')
                         timer.cancel()
                     else:
-                        # CHANGE THIS TO self.turn
-                        self.ai_turn('W', 'B')
+                        self.turn('W', 'B')
                     should_have_turn = not self.confirm_move()
             else:
                 print("No valid moves for White available")
