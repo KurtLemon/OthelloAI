@@ -15,13 +15,6 @@ class Othello:
         self.board[4][4] = 'W'
         self.backup_board = copy.deepcopy(self.board)
 
-    def generate_start_2(self):
-        self.board[3][3] = 'B'
-        self.board[3][4] = 'W'
-        self.board[4][3] = 'W'
-        self.board[4][4] = 'B'
-        self.backup_board = copy.deepcopy(self.board)
-
     def print_board(self):
         print("   _A__B__C__D__E__F__G__H_")
         for i in range(len(self.board)):
@@ -54,102 +47,27 @@ class Othello:
                 print(piece, end=' ')
             print()
 
-    def game(self):
-        ai_player_token = self.get_ai_player()
-        print(ai_player_token)
-        print("Welcome to Othello, Black goes first")
-        # Create function to see if there are any moves left
+    def game(self, weights_1, weights_2):
         moves_left = self.spaces_available()
         while moves_left:
             if self.valid_moves_exist('B', 'W'):
-                print()
                 should_have_turn = True
                 while should_have_turn:
-                    print("Black's Turn")
-                    self.print_scores()
-                    timer = threading.Timer(10, self.time_out)
-                    if ai_player_token == 'b':
-                        timer.start()
-                        # AI TAKES TURN
-                        self.ai_turn('B', 'W')
-                        timer.cancel()
-                    else:
-                        self.turn('B', 'W')
-                    should_have_turn = not self.confirm_move()
-            else:
-                print("No valid moves for Black available")
+                    self.ai_turn('B', 'W', weights_1)
+                    should_have_turn = False
             if self.valid_moves_exist('W', 'B'):
-                print()
                 should_have_turn = True
                 while should_have_turn:
-                    print("White's Turn")
-                    self.print_scores()
-                    timer = threading.Timer(10, self.time_out)
-                    if ai_player_token == 'w':
-                        timer.start()
-                        # AI TAKES TURN
-                        self.ai_turn('W', 'B')
-                        timer.cancel()
-                    else:
-                        self.turn('W', 'B')
-                    should_have_turn = not self.confirm_move()
-            else:
-                print("No valid moves for White available")
+                    self.ai_turn('W', 'B', weights_2)
+                    should_have_turn = False
             moves_left = self.spaces_available() and \
                 (self.valid_moves_exist('B', 'W') or self.valid_moves_exist('W', 'B'))
-        self.end_game_win()
-
-    def end_game_win(self):
-        black_count = 0
-        white_count = 0
-        for row in self.board:
-            for piece in row:
-                if piece == 'B':
-                    black_count += 1
-                elif piece == 'W':
-                    white_count += 1
-        print("****************************")
-        if black_count > white_count:
-            print("Black wins!")
-        elif white_count > black_count:
-            print("White wins!")
-        else:
-            print("Tie.")
-        self.print_scores()
-
-    def time_out(self):
-        print("10s has elapsed for AI player. AI loses.")
-        self.print_scores()
-        quit()
-
-    def get_ai_player(self):
-        player_input = input("Which Color should the AI have? (b, w)")
-        while player_input != 'b' and player_input != 'B' and player_input != 'w' and player_input != 'W':
-            player_input = input("Invalid input. Which Color should the AI have? (b, w)")
-        return player_input.lower()
-
-    def confirm_move(self):
-        print("Confirm Move:")
-        self.print_both_boards()
-        acc_input = input("Accept New Board? (y, n)")
-        while acc_input != 'y' and acc_input != 'Y' and acc_input != 'n' and acc_input != 'N':
-            acc_input = input("Invalid input. Accept New Board? (y, n)")
-        if acc_input == 'y' or acc_input == 'Y':
-            self.backup_board = copy.deepcopy(self.board)
-            return True
-        if acc_input == 'n' or acc_input == 'N':
-            self.board = copy.deepcopy(self.backup_board)
-        return False
 
     def spaces_available(self):
         for row in self.board:
             if '*' in row:
                 return True
         return False
-
-    def print_scores(self):
-        print("Black Score: ", self.get_score('B'))
-        print("White Score: ", self.get_score('W'))
 
     def get_score(self, piece):
         total = 0
@@ -169,7 +87,7 @@ class Othello:
                             return True
         return False
 
-    def ai_turn(self, piece, opponent):
+    def ai_turn(self, piece, opponent, values):
         max_value = 0
         max_x = 0
         max_y = 0
@@ -177,7 +95,7 @@ class Othello:
             for x in range(len(self.board[y])):
                 valid_move, message = self.validate_move(x, y, piece, opponent)
                 if valid_move:
-                    test_value = self.evaluate_move_location(x, y) + self.evaluate_move_pieces(x, y, piece, opponent)
+                    test_value = self.evaluate_move_location(x, y, values)
                     if test_value >= max_value:
                         max_value = test_value
                         max_x = x
@@ -185,63 +103,8 @@ class Othello:
         self.place_piece(max_x, max_y, piece)
         self.flip_pieces(max_x, max_y, piece, opponent)
 
-    def ai_turn_random(self, piece, opponent):
-        x = random.randint(0, 8)
-        y = random.randint(0, 8)
-        valid_move, message = self.validate_move(x, y, piece, opponent)
-        while not valid_move:
-            x = random.randint(0, 8)
-            y = random.randint(0, 8)
-            valid_move, message = self.validate_move(x, y, piece, opponent)
-        self.place_piece(x, y, piece)
-        self.flip_pieces(x, y, piece, opponent)
-
-    def evaluate_move_location(self, x, y):
-        values = [[ 1,  .5,  .5,  .5,  .5,  .5,  .5,  1],
-                  [.5, .25, .25, .25, .25, .25, .25, .5],
-                  [.5, .25,  .2,  .2,  .2,  .2, .25, .5],
-                  [.5, .25,  .2,  .1,  .1,  .2, .25, .5],
-                  [.5, .25,  .2,  .1,  .1,  .2, .25, .5],
-                  [.5, .25,  .2,  .2,  .2,  .2, .25, .5],
-                  [.5, .25, .25, .25, .25, .25, .25, .5],
-                  [ 1,  .5,  .5,  .5,  .5,  .5,  .5,  1]]
+    def evaluate_move_location(self, x, y, values):
         return values[y][x]
-
-    def evaluate_move_pieces(self, x, y, piece, opponent):
-        self.place_piece(x, y, piece)
-        self.flip_pieces(x, y, piece, opponent)
-        value = self.get_score(piece) / self.get_score(opponent)
-        self.board = copy.deepcopy(self.backup_board)
-        return value
-
-    def turn(self, piece, opponent):
-        # Display Board state for the player
-        self.print_board()
-
-        # Take in user input
-        x = input("X [A, H]: ")
-        y = input("Y [1, 8]: ")
-
-        # Convert user input to proper indexing values
-        x = self.char_to_int_index(x)
-        y = int(y) - 1
-
-        # Validate move
-        valid_move, message = self.validate_move(x, y, piece, opponent)
-        while not valid_move:
-            print(message, "enter another move.")
-
-            # Take in user input
-            x = input("X [A, H]: ")
-            y = input("Y (1, 8): ")
-
-            # Convert user input to proper indexing values
-            x = self.char_to_int_index(x)
-            y = int(y) - 1
-            valid_move, message = self.validate_move(x, y, piece, opponent)
-
-        self.place_piece(x, y, piece)
-        self.flip_pieces(x, y, piece, opponent)
 
     def check_for_pieces(self, piece, opponent, x, y, mode):
         if mode == 'up':
@@ -431,22 +294,120 @@ class Othello:
 
 
 def main():
-    othello = Othello()
-    start_position = get_start_position()
-    if start_position == '1':
+    epoch_size = 10000
+    good_heuristics = []
+
+    # Generate Initial Population
+    for k in range(64):
+        othello = Othello()
         othello.generate_start()
-    else:
-        othello.generate_start_2()
-    othello.game()
-    othello.print_board()
+        weights = []
+        for i in range(2):
+            weight = []
+            for y in range(len(othello.board)):
+                row = []
+                for x in range(len(othello.board[y])):
+                    row.append(random.randint(0, 1000) / 1000)
+                weight.append(row)
+            weights.append(weight)
+
+        # Play first round of games and add winners to good pile
+        othello.game(weights[0], weights[1])
+        if othello.get_score('B') >= othello.get_score('W'):
+            if othello.get_score('W') != 0:
+                good_heuristics.append((weights[0], othello.get_score('B') / othello.get_score('W')))
+            else:
+                good_heuristics.append((weights[0], 100))
+        elif othello.get_score('W') > othello.get_score('B'):
+            if othello.get_score('B') != 0:
+                good_heuristics.append((weights[1], othello.get_score('W') / othello.get_score('B')))
+            else:
+                good_heuristics.append((weights[1], 100))
+
+    for g in range(epoch_size):
+        print("Generation", g + 1, "/", epoch_size)
+        # Sort the good pile
+        for i in range(len(good_heuristics)):
+            for j in range(i + 1, len(good_heuristics)):
+                if good_heuristics[j][1] > good_heuristics[i][1]:
+                    temp = good_heuristics[j]
+                    good_heuristics[j] = good_heuristics[i]
+                    good_heuristics[i] = temp
+
+        # Mate the good pile and append both children to the new population
+        all_heuristics = []
+        available_indices = []
+        for i in range(64):
+            available_indices.append(i)
+        for i in range(0, len(good_heuristics) // 2, 1):
+            rand = random.randint(0, len(available_indices) - 1)
+            index = available_indices[rand]
+            available_indices.pop(rand)
+            heuristic_1, heuristic_2 = mate(good_heuristics[i][0], good_heuristics[index][0])
+            all_heuristics.append(heuristic_1)
+            all_heuristics.append(heuristic_2)
+
+        # Fill the rest of the population with random members
+        for k in range(32):
+            othello = Othello()
+            othello.generate_start()
+            weights = []
+            for i in range(2):
+                weight = []
+                for y in range(len(othello.board)):
+                    row = []
+                    for x in range(len(othello.board[y])):
+                        row.append(random.randint(0, 1000) / 1000)
+                    weight.append(row)
+                weights.append(weight)
+            all_heuristics.append(weights[0])
+            all_heuristics.append(weights[1])
+
+        # Play games to determine new population
+        good_heuristics = []
+        for i in range(0, len(all_heuristics), 2):
+            othello = Othello()
+            othello.generate_start()
+            othello.game(all_heuristics[i], all_heuristics[i + 1])
+            if othello.get_score('B') >= othello.get_score('W'):
+                if othello.get_score('W') != 0:
+                    good_heuristics.append((weights[0], othello.get_score('B') / othello.get_score('W')))
+                else:
+                    good_heuristics.append((weights[0], 100))
+            elif othello.get_score('W') > othello.get_score('B'):
+                if othello.get_score('B') != 0:
+                    good_heuristics.append((weights[1], othello.get_score('W') / othello.get_score('B')))
+                else:
+                    good_heuristics.append((weights[1], 100))
+
+    # Sort the good pile
+    for i in range(len(good_heuristics)):
+        for j in range(i + 1, len(good_heuristics)):
+            if good_heuristics[j][1] > good_heuristics[i][1]:
+                temp = good_heuristics[j]
+                good_heuristics[j] = good_heuristics[i]
+                good_heuristics[i] = temp
+
+    # Print the heuristic Scores and heuristics
+    for i in range(len(good_heuristics)):
+        print(good_heuristics[i][1],
+              "Corners",
+              good_heuristics[i][0][0][0] + good_heuristics[i][0][0][0] + good_heuristics[i][0][0][0] +
+              good_heuristics[i][0][0][0])
+        for row in good_heuristics[i][0]:
+            print(row)
+        print()
 
 
-def get_start_position():
-    player_input = input("Which configuration do you want to start with?\n1:  2:\nWB  BW\nBW  WB")
-    while player_input != '1' and player_input != '2':
-        player_input = input("Invalid input. Which configuration do you want to start with?\n1:  2:\nWB  BW\nBW  WB")
-    return player_input
 
+def mate(heuristic_1, heuristic_2):
+    for i in range(len(heuristic_1)):
+        for j in range(len(heuristic_1[i])):
+            if random.randint(0, 1) == 1:
+                temp = heuristic_1[i][j]
+                heuristic_1[i][j] = heuristic_2[i][j]
+                heuristic_2[i][j] = temp
+    return heuristic_1, heuristic_2
 
 if __name__ == '__main__':
     main()
