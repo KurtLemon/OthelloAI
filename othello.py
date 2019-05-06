@@ -170,9 +170,25 @@ class Othello:
         return False
 
     def ai_turn(self, piece, opponent):
+        self.ai_turn_num_pieces(piece, opponent)
+
+    def ai_turn_num_pieces(self, piece, opponent):
+        max_value = 0
+        max_x = 0
+        max_y = 0
+        for y in range(len(self.board)):
+            for x in range(len(self.board[y])):
+                test_value = self.evaluate_move_pieces(x, y, piece, opponent)
+                if test_value > max_value:
+                    max_value = test_value
+                    max_x = x
+                    max_y = y
+        self.place_piece(max_x, max_y, piece)
+        self.flip_pieces(max_x, max_y, piece, opponent)
+
+    def ai_turn_random(self, piece, opponent):
         x = random.randint(0, 8)
         y = random.randint(0, 8)
-
         valid_move, message = self.validate_move(x, y, piece, opponent)
         while not valid_move:
             x = random.randint(0, 8)
@@ -180,6 +196,16 @@ class Othello:
             valid_move, message = self.validate_move(x, y, piece, opponent)
         self.place_piece(x, y, piece)
         self.flip_pieces(x, y, piece, opponent)
+
+    def evaluate_move_location(self, x, y):
+        pass
+
+    def evaluate_move_pieces(self, x, y, piece, opponent):
+        self.place_piece(x, y, piece)
+        self.flip_pieces(x, y, piece, opponent)
+        value = self.get_score(piece) / self.get_score(opponent)
+        self.board = copy.deepcopy(self.backup_board)
+        return value
 
     def turn(self, piece, opponent):
         # Display Board state for the player
