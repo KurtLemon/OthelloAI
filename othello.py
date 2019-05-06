@@ -170,19 +170,18 @@ class Othello:
         return False
 
     def ai_turn(self, piece, opponent):
-        self.ai_turn_num_pieces(piece, opponent)
-
-    def ai_turn_num_pieces(self, piece, opponent):
         max_value = 0
         max_x = 0
         max_y = 0
         for y in range(len(self.board)):
             for x in range(len(self.board[y])):
-                test_value = self.evaluate_move_pieces(x, y, piece, opponent)
-                if test_value > max_value:
-                    max_value = test_value
-                    max_x = x
-                    max_y = y
+                valid_move, message = self.validate_move(x, y, piece, opponent)
+                if valid_move:
+                    test_value = self.evaluate_move_location(x, y) + self.evaluate_move_pieces(x, y, piece, opponent)
+                    if test_value > max_value:
+                        max_value = test_value
+                        max_x = x
+                        max_y = y
         self.place_piece(max_x, max_y, piece)
         self.flip_pieces(max_x, max_y, piece, opponent)
 
@@ -198,7 +197,15 @@ class Othello:
         self.flip_pieces(x, y, piece, opponent)
 
     def evaluate_move_location(self, x, y):
-        pass
+        values = [[ 1,  .5,  .5,  .5,  .5,  .5,  .5,  1],
+                  [.5, .25, .25, .25, .25, .25, .25, .5],
+                  [.5, .25,  .2,  .2,  .2,  .2, .25, .5],
+                  [.5, .25,  .2,  .1,  .1,  .2, .25, .5],
+                  [.5, .25,  .2,  .1,  .1,  .2, .25, .5],
+                  [.5, .25,  .2,  .2,  .2,  .2, .25, .5],
+                  [.5, .25, .25, .25, .25, .25, .25, .5],
+                  [ 1,  .5,  .5,  .5,  .5,  .5,  .5,  1]]
+        return values[y][x]
 
     def evaluate_move_pieces(self, x, y, piece, opponent):
         self.place_piece(x, y, piece)
