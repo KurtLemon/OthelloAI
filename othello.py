@@ -5,6 +5,7 @@ import random
 
 class Othello:
     def __init__(self):
+        self.theta = [0, 0, 1, 0]
         self.board = [['*' for _ in range(8)] for _ in range(8)]
         self.backup_board = copy.deepcopy(self.board)
 
@@ -177,7 +178,10 @@ class Othello:
             for x in range(len(self.board[y])):
                 valid_move, message = self.validate_move(x, y, piece, opponent)
                 if valid_move:
-                    test_value = self.evaluate_move_location(x, y) + self.evaluate_move_pieces(x, y, piece, opponent)
+                    test_value = self.theta[0] * self.heuristic_parity(x, y, piece, opponent) + \
+                                 self.theta[1] * self.heuristic_mobility(x, y, piece, opponent) + \
+                                 self.theta[2] * self.heuristic_corners(x, y, piece, opponent) + \
+                                 self.theta[3] * self.heuristic_stability(x, y, piece, opponent)
                     if test_value >= max_value:
                         max_value = test_value
                         max_x = x
@@ -196,23 +200,48 @@ class Othello:
         self.place_piece(x, y, piece)
         self.flip_pieces(x, y, piece, opponent)
 
-    def evaluate_move_location(self, x, y):
-        values = [[ 1,  .5,  .5,  .5,  .5,  .5,  .5,  1],
-                  [.5, .25, .25, .25, .25, .25, .25, .5],
-                  [.5, .25,  .2,  .2,  .2,  .2, .25, .5],
-                  [.5, .25,  .2,  .1,  .1,  .2, .25, .5],
-                  [.5, .25,  .2,  .1,  .1,  .2, .25, .5],
-                  [.5, .25,  .2,  .2,  .2,  .2, .25, .5],
-                  [.5, .25, .25, .25, .25, .25, .25, .5],
-                  [ 1,  .5,  .5,  .5,  .5,  .5,  .5,  1]]
-        return values[y][x]
-
-    def evaluate_move_pieces(self, x, y, piece, opponent):
+    def heuristic_parity(self, x, y, piece, opponent):
         self.place_piece(x, y, piece)
         self.flip_pieces(x, y, piece, opponent)
-        value = self.get_score(piece) / self.get_score(opponent)
+        piece_score = self.get_score(piece)
+        opponent_score = self.get_score(opponent)
+        value = 0
+        if piece_score + opponent_score != 0:
+            value = 100 * (piece_score - opponent_score) / (piece_score + opponent_score)
         self.board = copy.deepcopy(self.backup_board)
         return value
+
+    def heuristic_mobility(self, x, y, piece, opponent):
+        self.place_piece(x, y, piece)
+        self.flip_pieces(x, y, piece, opponent)
+        piece_move_count = 0
+        opponent_move_count = 0
+        for y in range(len(self.board)):
+            for x in range(len(self.board[y])):
+                valid_move, message = self.validate_move(x, y, piece, opponent)
+                if valid_move:
+                    piece_move_count += 1
+                valid_move, message = self.validate_move(x, y, opponent, piece)
+                if valid_move:
+                    opponent_move_count += 1
+        value = 0
+        if piece_move_count + opponent_move_count != 0:
+            value = 100 * (piece_move_count - opponent_move_count) / (piece_move_count + opponent_move_count)
+        self.board = copy.deepcopy(self.backup_board)
+        return value
+
+    def heuristic_corners(self, x, y, piece, opponent):
+        self.place_piece(x, y, piece)
+        self.flip_pieces(x, y, piece, opponent)
+        value = 0
+        if x == 0 or x == 7:
+            if y == 0 or y == 7:
+                value = 100
+        self.board = copy.deepcopy(self.backup_board)
+        return value
+
+    def heuristic_stability(self, x, y, piece, opponent):
+        return 1
 
     def turn(self, piece, opponent):
         # Display Board state for the player
@@ -245,7 +274,7 @@ class Othello:
 
     def check_for_pieces(self, piece, opponent, x, y, mode):
         if mode == 'up':
-            if y == 0:
+            if y <= 1:
                 return False
             if self.board[y - 1][x] != opponent:
                 return False
@@ -256,7 +285,7 @@ class Othello:
                     return True
             return False
         if mode == 'down':
-            if y == 7:
+            if y >= 6:
                 return False
             if self.board[y + 1][x] != opponent:
                 return False
@@ -267,7 +296,7 @@ class Othello:
                     return True
             return False
         if mode == 'left':
-            if x == 0:
+            if x <= 1:
                 return False
             if self.board[y][x - 1] != opponent:
                 return False
@@ -278,7 +307,7 @@ class Othello:
                     return True
             return False
         if mode == 'right':
-            if x == 7:
+            if x >= 6:
                 return False
             if self.board[y][x + 1] != opponent:
                 return False
@@ -289,7 +318,7 @@ class Othello:
                     return True
             return False
         if mode == 'up-left':
-            if y == 0 or x == 0:
+            if y <= 1 or x <= 1:
                 return False
             if self.board[y - 1][x - 1] != opponent:
                 return False
@@ -302,7 +331,7 @@ class Othello:
                 d += 1
             return False
         if mode == 'up-right':
-            if y == 0 or x == 7:
+            if y <= 1 or x >= 6:
                 return False
             if self.board[y - 1][x + 1] != opponent:
                 return False
@@ -315,7 +344,7 @@ class Othello:
                 d += 1
             return False
         if mode == 'down-left':
-            if y == 7 or x == 0:
+            if y >= 6 or x <= 1:
                 return False
             if self.board[y + 1][x - 1] != opponent:
                 return False
@@ -328,7 +357,7 @@ class Othello:
                 d += 1
             return False
         if mode == 'down-right':
-            if y == 7 or x == 7:
+            if y >= 6 or x >= 6:
                 return False
             if self.board[y + 1][x + 1] != opponent:
                 return False
@@ -406,7 +435,7 @@ class Othello:
 
         for direction in directions:
             if self.check_for_pieces(piece, opponent, x, y, direction):
-                return True, "Move is good"
+                return True, "Move is good in direction " + direction
 
         return False, "No pieces captured by this move"
 
