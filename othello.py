@@ -1,11 +1,12 @@
 import copy
 import threading
 import random
+import sys
 
 
 class Othello:
     def __init__(self):
-        self.theta = [0, 0, 0, 1]
+        self.theta = [.25, .25, .25, .25]
         self.board = [['*' for _ in range(8)] for _ in range(8)]
         self.backup_board = copy.deepcopy(self.board)
 
@@ -171,14 +172,16 @@ class Othello:
         return False
 
     def ai_turn(self, piece, opponent):
-        max_value = 0
+        max_value = -sys.maxsize - 1
         max_x = 0
         max_y = 0
         for y in range(len(self.board)):
             for x in range(len(self.board[y])):
                 valid_move, message = self.validate_move(x, y, piece, opponent)
                 if valid_move:
+                    print()
                     test_value = self.h_x(x, y, piece, opponent)
+                    print("h(x) at (", x, y, ")", test_value)
                     if test_value >= max_value:
                         max_value = test_value
                         max_x = x
@@ -187,6 +190,10 @@ class Othello:
         self.flip_pieces(max_x, max_y, piece, opponent)
 
     def h_x(self, x, y, piece, opponent):
+        print("Parity(x)", self.theta[0] * self.heuristic_parity(x, y, piece, opponent))
+        print("Mobility(x)", self.theta[1] * self.heuristic_mobility(x, y, piece, opponent))
+        print("Corners(x)", self.theta[2] * self.heuristic_corners(x, y, piece, opponent))
+        print("Stability(x)", self.theta[3] * self.heuristic_stability(x, y, piece, opponent))
         return self.theta[0] * self.heuristic_parity(x, y, piece, opponent) + \
                self.theta[1] * self.heuristic_mobility(x, y, piece, opponent) + \
                self.theta[2] * self.heuristic_corners(x, y, piece, opponent) + \
@@ -244,63 +251,125 @@ class Othello:
         return value
 
     def heuristic_stability(self, x, y, piece, opponent):
-        horizontal_stability = True
-        vertical_stability = True
-        diagonal_up_stability = True
-        diagonal_down_stability = True
+        self.place_piece(x, y, piece)
+        self.flip_pieces(x, y, piece, opponent)
+
+        opponent_left = False
+        stable_left = True
+        opponent_right = False
+        stable_right = True
+        horizontal_stability = 0
+        opponent_up = False
+        stable_up = True
+        opponent_down = False
+        stable_down = True
+        vertical_stability = 0
+        opponent_up_right = False
+        stable_up_right = True
+        opponent_down_left = False
+        stable_down_left = True
+        diagonal_up_stability = 0
+        opponent_up_left = False
+        stable_up_left = True
+        opponent_down_right = False
+        stable_down_right = True
+        diagonal_down_stability = 0
 
         # Check up
         for dy in range(y - 1, -1, -1):
-            if self.board[dy][x] == opponent or self.board[dy][x] == '*':
-                vertical_stability = False
+            if self.board[dy][x] == opponent:
+                opponent_up = True
+                stable_up = False
+            if  self.board[dy][x] == '*':
+                stable_up = False
 
         # Check down
         for dy in range(y + 1, 8):
-            if self.board[dy][x] == opponent or self.board[dy][x] == '*':
-                vertical_stability = False
+            if self.board[dy][x] == opponent:
+                opponent_down = True
+                stable_down = False
+            if self.board[dy][x] == '*':
+                stable_down = False
 
         # Check left
         for dx in range(x - 1, -1, -1):
-            if self.board[y][dx] == opponent or self.board[y][dx] == '*':
-                horizontal_stability = False
+            if self.board[y][dx] == opponent:
+                opponent_left = True
+                stable_left = False
+            if self.board[y][dx] == '*':
+                stable_left = False
 
         # Check right
         for dx in range(x + 1, 8):
-            if self.board[y][dx] == opponent or self.board[y][dx] == '*':
-                horizontal_stability = False
+            if self.board[y][dx] == opponent:
+                opponent_right = True
+                stable_right = False
+            if self.board[y][dx] == '*':
+                stable_right = False
 
         # Check up-left
         d = 1
         while x - d >= 0 and y - d >= 0:
-            if self.board[y - d][x - d] == opponent or self.board[y - d][x - d] == '*':
-                diagonal_down_stability = False
+            if self.board[y - d][x - d] == opponent:
+                opponent_up_left = True
+                stable_up_left = False
+            if self.board[y - d][x - d] == '*':
+                stable_up_left = False
             d += 1
 
         # Check down-right
         d = 1
         while x + d < 8 and y + d < 8:
-            if self.board[y + d][x + d] == opponent or self.board[y - d][x - d] == '*':
-                diagonal_down_stability = False
+            if self.board[y + d][x + d] == opponent:
+                opponent_down_right = True
+                stable_down_right = False
+            if self.board[y - d][x - d] == '*':
+                stable_down_right = False
             d += 1
 
         # Check down-left
         d = 1
         while x - d >= 0 and y + d < 8:
-            if self.board[y + d][x - d] == opponent or self.board[y + d][x - d] == '*':
-                diagonal_up_stability = False
+            if self.board[y + d][x - d] == opponent:
+                opponent_down_left = True
+                stable_down_left = False
+            if self.board[y + d][x - d] == '*':
+                stable_down_left = False
             d += 1
 
         # Check up-right
         d = 1
         while x + d < 8 and y - d >= 0:
-            if self.board[y - d][x + d] == opponent or self.board[y - d][x + d] == '*':
-                diagonal_up_stability = False
+            if self.board[y - d][x + d] == opponent:
+                opponent_right = True
+                stable_up_right = False
+            if self.board[y - d][x + d] == '*':
+                stable_up_right = False
             d += 1
 
-        if vertical_stability and horizontal_stability and diagonal_up_stability and diagonal_down_stability:
-            return 100
+        if stable_down or stable_up:
+            vertical_stability = 2
+        elif opponent_up and opponent_down:
+            vertical_stability = 1
 
-        return 0
+        if stable_left or stable_right:
+            horizontal_stability = 2
+        elif opponent_left and opponent_right:
+            horizontal_stability = 2
+
+        if stable_down_left or stable_up_right:
+            diagonal_up_stability = 2
+        elif opponent_down_left and opponent_up_right:
+            diagonal_up_stability = 1
+
+        if stable_down_right or stable_up_left:
+            diagonal_down_stability = 2
+        elif opponent_down_right and opponent_up_left:
+            diagonal_down_stability = 1
+
+        self.board = copy.deepcopy(self.backup_board)
+
+        return 100 * (vertical_stability + horizontal_stability + diagonal_down_stability + diagonal_up_stability) / 8
 
     def turn(self, piece, opponent):
         # Display Board state for the player
