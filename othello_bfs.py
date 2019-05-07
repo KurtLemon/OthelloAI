@@ -195,3 +195,155 @@ class Othello:
             if '*' in row:
                 return True
         return False
+
+    # Determines if there are any open spaces on a given board state.
+    def spaces_available_for_board_state(self, board_state):
+        for row in board_state:
+            if '*' in row:
+                return True
+        return False
+
+    # Gets the score from the in-play board from a given player.
+    def get_score(self, piece):
+        total = 0
+        for row in self.board:
+            for space in row:
+                if space == piece:
+                    total += 1
+        return total
+
+    # Gets the score from a given player in the specified board state.
+    def get_score_from_board_state(self, piece, board_state):
+        total = 0
+        for row in board_state:
+            for space in row:
+                if space == piece:
+                    total += 1
+        return total
+
+    # Determines if there are valid moves available for the given player on the current board.
+    def valid_moves_exist(self, piece, opponent):
+        directions = ['up', 'down', 'left', 'right', 'up-left', 'up-right', 'down-left', 'down-right']
+        for y in range(len(self.board)):
+            for x in range(len(self.board[y])):
+                if self.board[y][x] == '*':
+                    for direction in directions:
+                        if self.check_for_pieces(piece, opponent, x, y, direction):
+                            return True
+        return False
+
+    # Determines if there are valid moves available for the given player on a specified board state.
+    def valid_moves_exist_for_board_state(self, piece, opponent, board_state):
+        directions = ['up', 'down', 'left', 'right', 'up-left', 'up-right', 'down-left', 'down-right']
+        for y in range(len(board_state)):
+            for x in range(len(board_state[y])):
+                if board_state[y][x] == '*':
+                    for direction in directions:
+                        if self.check_for_pieces_for_board_state(piece, opponent, x, y, direction, board_state):
+                            return True
+        return False
+
+    # ******************************************************************************************************************
+    # AI TURN LOGIC
+    # ******************************************************************************************************************
+
+    # The turn logic for the AI player. Works off the current saved board state.
+    def ai_turn(self, piece, opponent):
+        max_value = -sys.maxsize - 1
+        max_x = 0
+        max_y = 0
+        for y in range(len(self.board)):
+            for x in range(len(self.board[y])):
+                valid_move, message = self.validate_move(x, y, piece, opponent)
+                if valid_move:
+                    print()
+                    test_value = self.h_x(x, y, piece, opponent)
+                    print("h(x) at (", x, y, ")", test_value)
+                    if test_value >= max_value:
+                        max_value = test_value
+                        max_x = x
+                        max_y = y
+        self.place_piece(max_x, max_y, piece)
+        self.flip_pieces(max_x, max_y, piece, opponent)
+
+    # ******************************************************************************************************************
+    # HEURISTICS
+    # ******************************************************************************************************************
+
+    # The full heuristic considering all components.
+    def h_x(self, x, y, piece, opponent):
+        return self.theta[0] * self.heuristic_parity(x, y, piece, opponent) + \
+               self.theta[1] * self.heuristic_mobility(x, y, piece, opponent) + \
+               self.theta[2] * self.heuristic_corners(x, y, piece, opponent) + \
+               self.theta[3] * self.heuristic_stability(x, y, piece, opponent)
+
+    # The full heuristic considering all components for a given board state.
+    def h_x_for_board_state(self, x, y, piece, opponent, board_state):
+        return self.theta[0] * self.heuristic_parity_for_board_state(x, y, piece, opponent, board_state) + \
+               self.theta[1] * self.heuristic_mobility_for_board_state(x, y, piece, opponent, board_state) + \
+               self.theta[2] * self.heuristic_corners_for_board_state(x, y, piece, opponent, board_state) + \
+               self.theta[3] * self.heuristic_stability_for_board_state(x, y, piece, opponent, board_state)
+
+    # A heuristic analysing the value of a move on the current board by the number of pieces it wil flip.
+    def heuristic_parity(self, x, y, piece, opponent):
+        self.place_piece(x, y, piece)
+        self.flip_pieces(x, y, piece, opponent)
+        piece_score = self.get_score(piece)
+        opponent_score = self.get_score(opponent)
+        value = 0
+        if piece_score + opponent_score != 0:
+            value = 100 * (piece_score - opponent_score) / (piece_score + opponent_score)
+        self.board = copy.deepcopy(self.backup_board)
+        return value
+
+    # A heuristic analysing the value of a move on a given board state by the number of pieces it wil flip.
+    def heuristic_parity_for_board_state(self, x, y, piece, opponent, board_state):
+        self.place_piece_on_board_state(x, y, piece, board_state)
+        self.flip_pieces_on_board_state(x, y, piece, opponent, board_state)
+        piece_score = self.get_score_from_board_state(piece, board_state)
+        opponent_score = self.get_score_from_board_state(opponent, board_state)
+        value = 0
+        if piece_score + opponent_score != 0:
+            value = 100 * (piece_score - opponent_score) / (piece_score + opponent_score)
+        return value
+
+    # A heuristic for analyzing the value of a move on the current board by the number of moves it opens up for the
+    #   current player and the number of moves it blocks for the opponent player.
+    def heuristic_mobility(self, x, y, piece, opponent):
+        self.place_piece(x, y, piece)
+        self.flip_pieces(x, y, piece, opponent)
+        piece_move_count = 0
+        opponent_move_count = 0
+        for y in range(len(self.board)):
+            for x in range(len(self.board[y])):
+                valid_move, message = self.validate_move(x, y, piece, opponent)
+                if valid_move:
+                    piece_move_count += 1
+                valid_move, message = self.validate_move(x, y, opponent, piece)
+                if valid_move:
+                    opponent_move_count += 1
+        value = 0
+        if piece_move_count + opponent_move_count != 0:
+            value = 100 * (piece_move_count - opponent_move_count) / (piece_move_count + opponent_move_count)
+        self.board = copy.deepcopy(self.backup_board)
+        return value
+
+    # A heuristic for analyzing the value of a move on a given board state by the number of moves it opens up for the
+    #   current player and the number of moves it blocks for the opponent player.
+    def heuristic_mobility_for_board_state(self, x, y, piece, opponent, board_state):
+        self.place_piece_on_board_state(x, y, piece, board_state)
+        self.flip_pieces_on_board_state(x, y, piece, opponent, board_state)
+        piece_move_count = 0
+        opponent_move_count = 0
+        for y in range(len(board_state)):
+            for x in range(len(board_state[y])):
+                valid_move, message = self.validate_move_for_board_state(x, y, piece, opponent, board_state)
+                if valid_move:
+                    piece_move_count += 1
+                valid_move, message = self.validate_move_for_board_state(x, y, opponent, piece, board_state)
+                if valid_move:
+                    opponent_move_count += 1
+        value = 0
+        if piece_move_count + opponent_move_count != 0:
+            value = 100 * (piece_move_count - opponent_move_count) / (piece_move_count + opponent_move_count)
+        return value
