@@ -491,6 +491,15 @@ class Othello:
         # Convert user input to proper indexing values
         x = self.char_to_int_index(x)
         y = int(y) - 1
+        while x < 0 or x > 7 or y < 0 or y > 7:
+            print("Invalid input")
+            # Take in user input
+            x = input("X [A, H]: ")
+            y = input("Y [1, 8]: ")
+
+            # Convert user input to proper indexing values
+            x = self.char_to_int_index(x)
+            y = int(y) - 1
 
         # Validate move
         valid_move, message = self.validate_move(x, y, piece, opponent)
@@ -524,7 +533,6 @@ class Othello:
                 if valid_move:
                     print()
                     test_value = self.h_x(x, y, piece, opponent)
-                    print("h(x) at (", x, y, ")", test_value)
                     if test_value >= max_value:
                         max_value = test_value
                         max_x = x
@@ -627,7 +635,7 @@ class Othello:
 
     # A heuristic for the value of a move based on the number of corners it captures based odd a given board state.
     def heuristic_corners_for_board_state(self, x, y, piece, opponent, board_state):
-        self.place_pieceon_board_state(x, y, piece, board_state)
+        self.place_piece_on_board_state(x, y, piece, board_state)
         self.flip_pieces_on_board_state(x, y, piece, opponent, board_state)
         value = 0
         if x == 0 or x == 7:
