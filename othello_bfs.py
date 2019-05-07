@@ -33,6 +33,10 @@ class Othello:
             self.board[4][4] = 'B'
         self.backup_board = copy.deepcopy(self.board)
 
+    # ******************************************************************************************************************
+    # PRINTING AND DISPLAY
+    # ******************************************************************************************************************
+
     # Prints out the state of the board that is currently in play.
     def print_board(self):
         print("   _A__B__C__D__E__F__G__H_")
@@ -524,21 +528,30 @@ class Othello:
 
     # The turn logic for the AI player. Works off the current saved board state.
     def ai_turn(self, piece, opponent):
+        board_state = copy.deepcopy(self.board)
+        max_x, max_y = self.maximize_board_state(piece, opponent, board_state)
+        self.place_piece(max_x, max_y, piece)
+        self.flip_pieces(max_x, max_y, piece, opponent)
+
+    # ******************************************************************************************************************
+    # MINIMAX AND SEARCHING
+    # ******************************************************************************************************************
+
+    def maximize_board_state(self, piece, opponent, board_state):
         max_value = -sys.maxsize - 1
         max_x = 0
         max_y = 0
-        for y in range(len(self.board)):
-            for x in range(len(self.board[y])):
-                valid_move, message = self.validate_move(x, y, piece, opponent)
+        for y in range(len(board_state)):
+            for x in range(len(board_state[y])):
+                valid_move, message = self.validate_move_for_board_state(x, y, piece, opponent, board_state)
                 if valid_move:
+                    test_value = self.h_x_for_board_state(x, y, piece, opponent, board_state)
                     print()
-                    test_value = self.h_x(x, y, piece, opponent)
                     if test_value >= max_value:
                         max_value = test_value
                         max_x = x
                         max_y = y
-        self.place_piece(max_x, max_y, piece)
-        self.flip_pieces(max_x, max_y, piece, opponent)
+        return max_x, max_y
 
     # ******************************************************************************************************************
     # HEURISTICS
@@ -572,6 +585,7 @@ class Othello:
 
     # A heuristic analysing the value of a move on a given board state by the number of pieces it wil flip.
     def heuristic_parity_for_board_state(self, x, y, piece, opponent, board_state):
+        board_state = copy.deepcopy(board_state)
         self.place_piece_on_board_state(x, y, piece, board_state)
         self.flip_pieces_on_board_state(x, y, piece, opponent, board_state)
         piece_score = self.get_score_from_board_state(piece, board_state)
@@ -605,6 +619,7 @@ class Othello:
     # A heuristic for analyzing the value of a move on a given board state by the number of moves it opens up for the
     #   current player and the number of moves it blocks for the opponent player.
     def heuristic_mobility_for_board_state(self, x, y, piece, opponent, board_state):
+        board_state = copy.deepcopy(board_state)
         self.place_piece_on_board_state(x, y, piece, board_state)
         self.flip_pieces_on_board_state(x, y, piece, opponent, board_state)
         piece_move_count = 0
@@ -635,6 +650,7 @@ class Othello:
 
     # A heuristic for the value of a move based on the number of corners it captures based odd a given board state.
     def heuristic_corners_for_board_state(self, x, y, piece, opponent, board_state):
+        board_state = copy.deepcopy(board_state)
         self.place_piece_on_board_state(x, y, piece, board_state)
         self.flip_pieces_on_board_state(x, y, piece, opponent, board_state)
         value = 0
@@ -772,6 +788,7 @@ class Othello:
 
     # A heuristic for move value based on the number of stable pieces it creates on a given board state.
     def heuristic_stability_for_board_state(self, xloc, yloc, piece, opponent, board_state):
+        board_state = copy.deepcopy(board_state)
         self.place_piece_on_board_state(xloc, yloc, piece, board_state)
         self.flip_pieces_on_board_state(xloc, yloc, piece, opponent, board_state)
 
