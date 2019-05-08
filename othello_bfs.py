@@ -529,7 +529,7 @@ class Othello:
     # The turn logic for the AI player. Works off the current saved board state.
     def ai_turn(self, piece, opponent):
         board_state = copy.deepcopy(self.board)
-        max_x, max_y = self.maximize_board_state(piece, opponent, board_state)
+        max_x, max_y, max_value = self.maximize_piece_board_state(piece, opponent, board_state)
         self.place_piece(max_x, max_y, piece)
         self.flip_pieces(max_x, max_y, piece, opponent)
 
@@ -537,21 +537,40 @@ class Othello:
     # MINIMAX AND SEARCHING
     # ******************************************************************************************************************
 
-    def maximize_board_state(self, piece, opponent, board_state):
+    def breadth_first_search(self, board_state, piece, opponent):
+        pass
+
+    def maximize_piece_board_state(self, piece, opponent, board_state):
         max_value = -sys.maxsize - 1
         max_x = 0
         max_y = 0
         for y in range(len(board_state)):
             for x in range(len(board_state[y])):
-                valid_move, message = self.validate_move_for_board_state(x, y, piece, opponent, board_state)
+                valid_move, message = self.validate_move_for_board_state(x, y, piece=piece, opponent=opponent,
+                                                                         board_state=board_state)
                 if valid_move:
                     test_value = self.h_x_for_board_state(x, y, piece, opponent, board_state)
-                    print()
                     if test_value >= max_value:
                         max_value = test_value
                         max_x = x
                         max_y = y
-        return max_x, max_y
+        return max_x, max_y, max_value
+
+    def maximize_opponent_board_state(self, piece, opponent, board_state):
+        max_value = -sys.maxsize - 1
+        max_x = 0
+        max_y = 0
+        for y in range(len(board_state)):
+            for x in range(len(board_state[y])):
+                valid_move, message = self.validate_move_for_board_state(x, y, piece=opponent, opponent=piece,
+                                                                         board_state=board_state)
+                if valid_move:
+                    test_value = self.h_x_for_board_state(x, y, piece=opponent, opponent=piece, board_state=board_state)
+                    if test_value >= max_value:
+                        max_value = test_value
+                        max_x = x
+                        max_y = y
+        return max_x, max_y, max_value
 
     # ******************************************************************************************************************
     # HEURISTICS
