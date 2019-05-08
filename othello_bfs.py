@@ -12,7 +12,7 @@ class Othello:
 
     # Initialize the board and backup board data structures, populating them to be totally empty.
     def __init__(self):
-        self.theta = [0, 0, 1, 0]
+        self.theta = [.25, .25, .25, .25]
         self.board = [['*' for _ in range(8)] for _ in range(8)]
         self.backup_board = copy.deepcopy(self.board)
 
@@ -556,15 +556,24 @@ class Othello:
         max_val_location = 0
         for i in range(len(children)):
             child = children[i][0]
-            value = self.alpha_beta(child, depth - 1, alpha, beta, False, opponent, piece)
+            value = -self.alpha_beta(child, depth - 1, alpha, beta, False, opponent, piece)
+            print("DETERMINED ALPHA-BETA VALUE FOR:")
+            self.print_board_from_board_state(child)
+            children[i].append(value)
+            print("VALUE:", value)
+            print()
             if value >= max_val:
                 max_val = value
                 max_val_location = i
+        print("MAXIMUM CHILD")
+        self.print_board_from_board_state(children[max_val_location][0])
+        print("X, Y:", children[max_val_location][1], children[max_val_location][2])
+        print("VALUE:", children[max_val_location][3])
         return children[max_val_location][1], children[max_val_location][2]
 
     def alpha_beta(self, board_state, depth, alpha, beta, player, piece, opponent):
         if depth == 0:
-            return self.h_x_for_board_state(piece, opponent, board_state)
+            return self.h_x_for_board_state(opponent, piece, board_state)
         if player:
             value = -math.inf
             children = []
@@ -655,10 +664,23 @@ class Othello:
 
     # The full heuristic considering all components for a given board state.
     def h_x_for_board_state(self, piece, opponent, board_state):
-        return self.theta[0] * self.heuristic_parity_for_board_state(piece, opponent, board_state) + \
-               self.theta[1] * self.heuristic_mobility_for_board_state(piece, opponent, board_state) + \
-               self.theta[2] * self.heuristic_corners_for_board_state(piece, board_state) + \
-               self.theta[3] * self.heuristic_stability_for_board_state(piece, opponent, board_state)
+        print("Searching for", piece)
+        self.print_board_from_board_state(board_state)
+        parity = self.heuristic_parity_for_board_state(piece, opponent, board_state)
+        mobility = self.heuristic_mobility_for_board_state(piece, opponent, board_state)
+        corners = self.heuristic_corners_for_board_state(piece, board_state)
+        stability = self.heuristic_stability_for_board_state(piece, opponent, board_state)
+        total_h_value = self.theta[0] * parity + \
+                        self.theta[1] * mobility + \
+                        self.theta[2] * corners + \
+                        self.theta[3] * stability
+        print("Parity:", parity)
+        print("Mobility:", mobility)
+        print("Corners:", corners)
+        print("Stability:", stability)
+        print("Total Heuristic Value:", total_h_value)
+        print()
+        return total_h_value
 
     # A heuristic analysing the value of a move on the current board by the number of pieces it wil flip.
     def heuristic_parity(self, x, y, piece, opponent):
