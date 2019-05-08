@@ -12,7 +12,8 @@ class Othello:
 
     # Initialize the board and backup board data structures, populating them to be totally empty.
     def __init__(self):
-        self.theta = [.25, .25, .25, .25]
+        self.theta = [.25, .25, .25, .25]  # WHITE
+        self.theta2 = [0, 0, 0, 0]  # BLACK
         self.board = [['*' for _ in range(8)] for _ in range(8)]
         self.backup_board = copy.deepcopy(self.board)
 
@@ -121,7 +122,7 @@ class Othello:
                 while should_have_turn:
                     print("Black's Turn")
                     self.print_scores()
-                    timer = threading.Timer(10, self.time_out)
+                    timer = threading.Timer(20, self.time_out)
                     timer.start()
                     # AI TAKES TURN
                     self.ai_turn('B', 'W')
@@ -135,7 +136,7 @@ class Othello:
                 while should_have_turn:
                     print("White's Turn")
                     self.print_scores()
-                    timer = threading.Timer(10, self.time_out)
+                    timer = threading.Timer(20, self.time_out)
                     timer.start()
                     # AI TAKES TURN
                     self.ai_turn_2('W', 'B')
@@ -525,7 +526,7 @@ class Othello:
     # The turn logic for the AI player. Works off the current saved board state.
     def ai_turn(self, piece, opponent):
         board_state = copy.deepcopy(self.board)
-        max_x, max_y = self.alpha_beta_starter(board_state, 2, -math.inf, math.inf, piece, opponent)
+        max_x, max_y = self.alpha_beta_starter_2(board_state, 3, -math.inf, math.inf, piece, opponent)
         # max_x, max_y, max_value = self.maximize_piece_board_state(piece, opponent, board_state)
         print("AI move:", self.int_index_to_char(max_x), max_y + 1)
         self.place_piece(max_x, max_y, piece)
@@ -534,7 +535,7 @@ class Othello:
     # The turn logic for the AI player. Works off the current saved board state.
     def ai_turn_2(self, piece, opponent):
         board_state = copy.deepcopy(self.board)
-        max_x, max_y = self.alpha_beta_starter(board_state, 4, -math.inf, math.inf, piece, opponent)
+        max_x, max_y = self.alpha_beta_starter(board_state, 3, -math.inf, math.inf, piece, opponent)
         # max_x, max_y, max_value = self.maximize_piece_board_state(piece, opponent, board_state)
         print("AI move:", self.int_index_to_char(max_x), max_y + 1)
         self.place_piece(max_x, max_y, piece)
@@ -578,6 +579,8 @@ class Othello:
                         self.place_piece_on_board_state(x, y, piece, board_state_copy)
                         self.flip_pieces_on_board_state(x, y, piece, opponent, board_state_copy)
                         children.append(board_state_copy)
+            if not children:
+                return self.h_x_for_board_state(piece, opponent, board_state)
             for child in children:
                 value = max(value, self.alpha_beta(child, depth - 1, alpha, beta, False, opponent, piece))
                 alpha = max(alpha, value)
@@ -595,8 +598,72 @@ class Othello:
                         self.place_piece_on_board_state(x, y, piece, board_state_copy)
                         self.flip_pieces_on_board_state(x, y, piece, opponent, board_state_copy)
                         children.append(board_state_copy)
+            if not children:
+                return self.h_x_for_board_state(piece, opponent, board_state)
             for child in children:
                 value = min(value, -self.alpha_beta(child, depth - 1, alpha, beta, True, opponent, piece))
+                beta = min(beta, value)
+                if alpha >= beta:
+                    break
+            return value
+
+    def alpha_beta_starter_2(self, board_state, depth, alpha, beta, piece, opponent):
+        children = []
+        for y in range(len(board_state)):
+            for x in range(len(board_state[y])):
+                valid_move, message = self.validate_move_for_board_state(x, y, piece, opponent, board_state)
+                if valid_move:
+                    board_state_copy = copy.deepcopy(board_state)
+                    self.place_piece_on_board_state(x, y, piece, board_state_copy)
+                    self.flip_pieces_on_board_state(x, y, piece, opponent, board_state_copy)
+                    children.append([board_state_copy, x, y])
+        max_val = -math.inf
+        max_val_location = 0
+        for i in range(len(children)):
+            child = children[i][0]
+            value = self.alpha_beta_2(child, depth - 1, alpha, beta, False, opponent, piece)
+            if value >= max_val:
+                max_val = value
+                max_val_location = i
+        return children[max_val_location][1], children[max_val_location][2]
+
+    def alpha_beta_2(self, board_state, depth, alpha, beta, player, piece, opponent):
+        if depth == 0:
+            return self.h_x_for_board_state_2(piece, opponent, board_state)
+        if player:
+            value = -math.inf
+            children = []
+            for y in range(len(board_state)):
+                for x in range(len(board_state[y])):
+                    valid_move, message = self.validate_move_for_board_state(x, y, piece, opponent, board_state)
+                    if valid_move:
+                        board_state_copy = copy.deepcopy(board_state)
+                        self.place_piece_on_board_state(x, y, piece, board_state_copy)
+                        self.flip_pieces_on_board_state(x, y, piece, opponent, board_state_copy)
+                        children.append(board_state_copy)
+            if not children:
+                return self.h_x_for_board_state_2(piece, opponent, board_state)
+            for child in children:
+                value = max(value, self.alpha_beta_2(child, depth - 1, alpha, beta, False, opponent, piece))
+                alpha = max(alpha, value)
+                if alpha >= beta:
+                    break
+            return value
+        else:
+            value = math.inf
+            children = []
+            for y in range(len(board_state)):
+                for x in range(len(board_state[y])):
+                    valid_move, message = self.validate_move_for_board_state(x, y, piece, opponent, board_state)
+                    if valid_move:
+                        board_state_copy = copy.deepcopy(board_state)
+                        self.place_piece_on_board_state(x, y, piece, board_state_copy)
+                        self.flip_pieces_on_board_state(x, y, piece, opponent, board_state_copy)
+                        children.append(board_state_copy)
+            if not children:
+                return self.h_x_for_board_state_2(piece, opponent, board_state)
+            for child in children:
+                value = min(value, -self.alpha_beta_2(child, depth - 1, alpha, beta, True, opponent, piece))
                 beta = min(beta, value)
                 if alpha >= beta:
                     break
@@ -661,6 +728,13 @@ class Othello:
                self.theta[1] * self.heuristic_mobility_for_board_state(piece, opponent, board_state) + \
                self.theta[2] * self.heuristic_corners_for_board_state(piece, board_state) + \
                self.theta[3] * self.heuristic_stability_for_board_state(piece, opponent, board_state)
+
+    # The full heuristic considering all components for a given board state.
+    def h_x_for_board_state_2(self, piece, opponent, board_state):
+        return self.theta2[0] * self.heuristic_parity_for_board_state(piece, opponent, board_state) + \
+               self.theta2[1] * self.heuristic_mobility_for_board_state(piece, opponent, board_state) + \
+               self.theta2[2] * self.heuristic_corners_for_board_state(piece, board_state) + \
+               self.theta2[3] * self.heuristic_stability_for_board_state(piece, opponent, board_state)
 
     # A heuristic analysing the value of a move on the current board by the number of pieces it wil flip.
     def heuristic_parity(self, x, y, piece, opponent):
