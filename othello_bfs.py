@@ -529,9 +529,10 @@ class Othello:
     # The turn logic for the AI player. Works off the current saved board state.
     def ai_turn(self, piece, opponent):
         board_state = copy.deepcopy(self.board)
-        max_x, max_y, max_value = self.maximize_piece_board_state(piece, opponent, board_state)
-        self.place_piece(max_x, max_y, piece)
-        self.flip_pieces(max_x, max_y, piece, opponent)
+        self.breadth_first_search(board_state, piece, opponent)
+        # max_x, max_y, max_value = self.maximize_piece_board_state(piece, opponent, board_state)
+        # self.place_piece(max_x, max_y, piece)
+        # self.flip_pieces(max_x, max_y, piece, opponent)
 
     # ******************************************************************************************************************
     # MINIMAX AND SEARCHING
@@ -540,6 +541,8 @@ class Othello:
     def breadth_first_search(self, board_state, piece, opponent):
         pass
 
+    # Given a particular board state the function finds the best possible move for the player and returns its location
+    #   as well as heuristic value.
     def maximize_piece_board_state(self, piece, opponent, board_state):
         max_value = -sys.maxsize - 1
         max_x = 0
@@ -556,6 +559,8 @@ class Othello:
                         max_y = y
         return max_x, max_y, max_value
 
+    # Given a particular board state the function finds the best possible move for the opponent and returns its location
+    #   and heuristic value.
     def maximize_opponent_board_state(self, piece, opponent, board_state):
         max_value = -sys.maxsize - 1
         max_x = 0
