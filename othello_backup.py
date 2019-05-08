@@ -530,8 +530,8 @@ class Othello:
     # The turn logic for the AI player. Works off the current saved board state.
     def ai_turn(self, piece, opponent):
         board_state = copy.deepcopy(self.board)
-        max_x, max_y = self.alpha_beta_starter(board_state, 2, -math.inf, math.inf, True, piece, opponent)
-        # max_x, max_y, max_value = self.maximize_piece_board_state(piece, opponent, board_state)
+
+        max_x, max_y, max_value = self.maximize_piece_board_state(piece, opponent, board_state)
         self.place_piece(max_x, max_y, piece)
         self.flip_pieces(max_x, max_y, piece, opponent)
 
@@ -539,29 +539,10 @@ class Othello:
     # MINIMAX AND SEARCHING
     # ******************************************************************************************************************
 
-    def alpha_beta_starter(self, board_state, depth, alpha, beta, player, piece, opponent):
-        children = []
-        for y in range(len(board_state)):
-            for x in range(len(board_state[y])):
-                valid_move, message = self.validate_move_for_board_state(x, y, piece, opponent, board_state)
-                if valid_move:
-                    board_state_copy = copy.deepcopy(board_state)
-                    self.place_piece_on_board_state(x, y, piece, board_state_copy)
-                    self.flip_pieces_on_board_state(x, y, piece, opponent, board_state_copy)
-                    children.append([board_state_copy, x, y])
-        max_val = -math.inf
-        max_val_location = 0
-        for i in range(len(children)):
-            child = children[i][0]
-            value = self.alpha_beta(child, depth - 1, alpha, beta, False, opponent, piece)
-            if value >= max_val:
-                max_val = value
-                max_val_location = i
-        return children[max_val_location][1], children[max_val_location][2]
-
     def alpha_beta(self, board_state, depth, alpha, beta, player, piece, opponent):
         if depth == 0:
-            return self.h_x_for_board_state(piece, opponent, board_state)
+            # return self.h_x_for_board_state()
+            pass
         if player:
             value = -math.inf
             children = []
@@ -574,28 +555,7 @@ class Othello:
                         self.flip_pieces_on_board_state(x, y, piece, opponent, board_state_copy)
                         children.append(board_state_copy)
             for child in children:
-                value = max(value, self.alpha_beta(child, depth - 1, alpha, beta, False, opponent, piece))
-                alpha = max(alpha, value)
-                if alpha >= beta:
-                    break
-            return value
-        else:
-            value = math.inf
-            children = []
-            for y in range(len(board_state)):
-                for x in range(len(board_state[y])):
-                    valid_move, message = self.validate_move_for_board_state(x, y, piece, opponent, board_state)
-                    if valid_move:
-                        board_state_copy = copy.deepcopy(board_state)
-                        self.place_piece_on_board_state(x, y, piece, board_state_copy)
-                        self.flip_pieces_on_board_state(x, y, piece, opponent, board_state_copy)
-                        children.append(board_state_copy)
-            for child in children:
-                value = min(value, self.alpha_beta(child, depth - 1, alpha, beta, True, opponent, piece))
-                beta = min(beta, value)
-                if alpha >= beta:
-                    break
-            return value
+                pass
 
     # Given a particular board state the function finds the best possible move for the player and returns its location
     #   as well as heuristic value.
