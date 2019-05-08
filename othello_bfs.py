@@ -1,6 +1,5 @@
 import copy
 import threading
-import random
 import sys
 import math
 
@@ -276,7 +275,7 @@ class Othello:
             for x in range(len(board_state[y])):
                 if board_state[y][x] == '*':
                     for direction in directions:
-                        if self.check_for_pieces_for_board_state(piece, opponent, x, y, direction, board_state):
+                        if self.check_for_pieces_on_board_state(piece, opponent, x, y, direction, board_state):
                             return True
         return False
 
@@ -533,7 +532,7 @@ class Othello:
     # The turn logic for the AI player. Works off the current saved board state.
     def ai_turn(self, piece, opponent):
         board_state = copy.deepcopy(self.board)
-        max_x, max_y = self.alpha_beta_starter(board_state, 3, -math.inf, math.inf, True, piece, opponent)
+        max_x, max_y = self.alpha_beta_starter(board_state, 3, -math.inf, math.inf, piece, opponent)
         # max_x, max_y, max_value = self.maximize_piece_board_state(piece, opponent, board_state)
         print("AI move:", self.int_index_to_char(max_x), max_y + 1)
         self.place_piece(max_x, max_y, piece)
@@ -543,7 +542,7 @@ class Othello:
     # MINIMAX AND SEARCHING
     # ******************************************************************************************************************
 
-    def alpha_beta_starter(self, board_state, depth, alpha, beta, player, piece, opponent):
+    def alpha_beta_starter(self, board_state, depth, alpha, beta, piece, opponent):
         children = []
         for y in range(len(board_state)):
             for x in range(len(board_state[y])):
@@ -633,7 +632,10 @@ class Othello:
                 valid_move, message = self.validate_move_for_board_state(x, y, piece=opponent, opponent=piece,
                                                                          board_state=board_state)
                 if valid_move:
-                    test_value = self.h_x_for_board_state(x, y, piece=opponent, opponent=piece, board_state=board_state)
+                    board_state_copy = copy.deepcopy(board_state)
+                    self.place_piece_on_board_state(x, y, opponent, board_state_copy)
+                    self.flip_pieces_on_board_state(x, y, opponent, piece, board_state_copy)
+                    test_value = self.h_x_for_board_state(opponent, piece, board_state_copy)
                     if test_value >= max_value:
                         max_value = test_value
                         max_x = x
@@ -655,7 +657,7 @@ class Othello:
     def h_x_for_board_state(self, piece, opponent, board_state):
         return self.theta[0] * self.heuristic_parity_for_board_state(piece, opponent, board_state) + \
                self.theta[1] * self.heuristic_mobility_for_board_state(piece, opponent, board_state) + \
-               self.theta[2] * self.heuristic_corners_for_board_state(piece, opponent, board_state) + \
+               self.theta[2] * self.heuristic_corners_for_board_state(piece, board_state) + \
                self.theta[3] * self.heuristic_stability_for_board_state(piece, opponent, board_state)
 
     # A heuristic analysing the value of a move on the current board by the number of pieces it wil flip.
@@ -730,7 +732,7 @@ class Othello:
         return value
 
     # A heuristic for the value of a move based on the number of corners it captures based odd a given board state.
-    def heuristic_corners_for_board_state(self, piece, opponent, board_state):
+    def heuristic_corners_for_board_state(self, piece, board_state):
         value = 0
         if board_state[0][0] == piece:
             value += 100
