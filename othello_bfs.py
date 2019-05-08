@@ -556,7 +556,7 @@ class Othello:
         max_val_location = 0
         for i in range(len(children)):
             child = children[i][0]
-            value = -self.alpha_beta(child, depth - 1, alpha, beta, False, opponent, piece)
+            value = -self.alpha_beta_2(child, depth - 1, alpha, beta, False, opponent, piece)
             print("DETERMINED ALPHA-BETA VALUE FOR:")
             self.print_board_from_board_state(child)
             children[i].append(value)
@@ -604,6 +604,47 @@ class Othello:
                         children.append(board_state_copy)
             for child in children:
                 value = min(value, -self.alpha_beta(child, depth - 1, alpha, beta, True, opponent, piece))
+                beta = min(beta, value)
+                if alpha >= beta:
+                    break
+            return value
+
+    def alpha_beta_2(self, board_state, depth, alpha, beta, player, piece, opponent):
+        if depth == 0:
+            if player:
+                return self.h_x_for_board_state(piece, opponent, board_state)
+            else:
+                return -self.h_x_for_board_state(opponent, piece, board_state)
+        if player:
+            value = -math.inf
+            children = []
+            for y in range(len(board_state)):
+                for x in range(len(board_state[y])):
+                    valid_move, message = self.validate_move_for_board_state(x, y, piece, opponent, board_state)
+                    if valid_move:
+                        board_state_copy = copy.deepcopy(board_state)
+                        self.place_piece_on_board_state(x, y, piece, board_state_copy)
+                        self.flip_pieces_on_board_state(x, y, piece, opponent, board_state_copy)
+                        children.append(board_state_copy)
+            for child in children:
+                value = max(value, self.alpha_beta_2(child, depth - 1, alpha, beta, False, piece, opponent))
+                alpha = max(alpha, value)
+                if alpha >= beta:
+                    break
+            return value
+        else:
+            value = math.inf
+            children = []
+            for y in range(len(board_state)):
+                for x in range(len(board_state[y])):
+                    valid_move, message = self.validate_move_for_board_state(x, y, opponent, piece, board_state)
+                    if valid_move:
+                        board_state_copy = copy.deepcopy(board_state)
+                        self.place_piece_on_board_state(x, y, opponent, board_state_copy)
+                        self.flip_pieces_on_board_state(x, y, opponent, piece, board_state_copy)
+                        children.append(board_state_copy)
+            for child in children:
+                value = min(value, self.alpha_beta_2(child, depth - 1, alpha, beta, True, piece, opponent))
                 beta = min(beta, value)
                 if alpha >= beta:
                     break
