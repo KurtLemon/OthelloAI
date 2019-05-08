@@ -495,7 +495,10 @@ class Othello:
 
         # Convert user input to proper indexing values
         x = self.char_to_int_index(x)
-        y = int(y) - 1
+        if y.isdigit():
+            y = int(y) - 1
+        else:
+            y = -1
         while x < 0 or x > 7 or y < 0 or y > 7:
             print("Invalid input")
             # Take in user input
@@ -530,8 +533,9 @@ class Othello:
     # The turn logic for the AI player. Works off the current saved board state.
     def ai_turn(self, piece, opponent):
         board_state = copy.deepcopy(self.board)
-        max_x, max_y = self.alpha_beta_starter(board_state, 2, -math.inf, math.inf, True, piece, opponent)
+        max_x, max_y = self.alpha_beta_starter(board_state, 4, -math.inf, math.inf, True, piece, opponent)
         # max_x, max_y, max_value = self.maximize_piece_board_state(piece, opponent, board_state)
+        print("AI move:", self.int_index_to_char(max_x), max_y + 1)
         self.place_piece(max_x, max_y, piece)
         self.flip_pieces(max_x, max_y, piece, opponent)
 
@@ -591,7 +595,7 @@ class Othello:
                         self.flip_pieces_on_board_state(x, y, piece, opponent, board_state_copy)
                         children.append(board_state_copy)
             for child in children:
-                value = min(value, self.alpha_beta(child, depth - 1, alpha, beta, True, opponent, piece))
+                value = min(value, -self.alpha_beta(child, depth - 1, alpha, beta, True, opponent, piece))
                 beta = min(beta, value)
                 if alpha >= beta:
                     break
@@ -1125,6 +1129,26 @@ class Othello:
         if c == 'H' or c == 'h':
             return 7
         return -1
+
+    # Given an index it returns it in expected user input value.
+    def int_index_to_char(self, i):
+        if i == 0:
+            return 'A'
+        if i == 1:
+            return 'B'
+        if i == 2:
+            return 'C'
+        if i == 3:
+            return 'D'
+        if i == 4:
+            return 'E'
+        if i == 5:
+            return 'F'
+        if i == 6:
+            return 'G'
+        if i == 7:
+            return 'H'
+        return '-1'
 
 
 def main():
