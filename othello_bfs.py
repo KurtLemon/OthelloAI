@@ -12,7 +12,7 @@ class Othello:
 
     # Initialize the board and backup board data structures, populating them to be totally empty.
     def __init__(self):
-        self.theta = [1, 1, 1, 2]
+        self.theta = [1, 1, 1, 1]
         self.board = [['*' for _ in range(8)] for _ in range(8)]
         self.backup_board = copy.deepcopy(self.board)
 

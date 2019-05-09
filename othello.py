@@ -12,7 +12,7 @@ class Othello:
 
     # Initialize the board and backup board data structures, populating them to be totally empty.
     def __init__(self):
-        self.theta = [1, 1, 1, 2]
+        self.theta = [1, 1, 1, 1]
         self.board = [['*' for _ in range(8)] for _ in range(8)]
         self.backup_board = copy.deepcopy(self.board)
 
@@ -534,7 +534,7 @@ class Othello:
     # The turn logic for the AI player. Works off the current saved board state.
     def ai_turn(self, piece, opponent):
         board_state = copy.deepcopy(self.board)
-        max_x, max_y = self.alpha_beta_starter(board_state, 3, -math.inf, math.inf, piece, opponent)
+        max_x, max_y = self.alpha_beta_starter(board_state, 4, -math.inf, math.inf, piece, opponent)
         # max_x, max_y, max_value = self.maximize_piece_board_state(piece, opponent, board_state)
         print("AI move:", self.int_index_to_char(max_x), max_y + 1)
         self.place_piece(max_x, max_y, piece)
