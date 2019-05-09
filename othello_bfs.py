@@ -12,7 +12,7 @@ class Othello:
 
     # Initialize the board and backup board data structures, populating them to be totally empty.
     def __init__(self):
-        self.theta = [.25, .25, .25, .25]
+        self.theta = [1, 1, 1, 2]
         self.board = [['*' for _ in range(8)] for _ in range(8)]
         self.backup_board = copy.deepcopy(self.board)
 
@@ -1039,7 +1039,6 @@ class Othello:
                                                       diagonal_up_stability) / 8)
                     else:
                         total_stability.append(0)
-                    print("Stability at move", x, y, total_stability[-1])
         return sum(total_stability) / len(total_stability)
 
     # ******************************************************************************************************************
