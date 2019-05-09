@@ -122,6 +122,8 @@ class Othello:
                 while should_have_turn:
                     print("Black's Turn")
                     self.print_scores()
+                    if self.num_spaces_available() < 6:
+                        self.theta[0] = 5
                     timer = threading.Timer(10, self.time_out)
                     if ai_player_token == 'b':
                         timer.start()
@@ -1158,6 +1160,22 @@ class Othello:
     # ******************************************************************************************************************
     # UTILITIES
     # ******************************************************************************************************************
+
+    def num_spaces_available_on_board_state(self, board_state):
+        spaces = 0
+        for y in range(len(board_state)):
+            for x in range(len(board_state[y])):
+                if board_state[y][x] == '*':
+                    spaces += 1
+        return spaces
+
+    def num_spaces_available(self):
+        spaces = 0
+        for y in range(len(self.board)):
+            for x in range(len(self.board[y])):
+                if self.board[y][x] == '*':
+                    spaces += 1
+        return spaces
 
     # Given user input in selecting a coordinate, it provides the useful numeric value.
     def char_to_int_index(self, c):
